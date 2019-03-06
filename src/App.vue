@@ -1,28 +1,35 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <transition :name="trans" mode="">
+      <router-view />
+    </transition>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Home from "./views/Home.vue";
 
 export default {
-  name: 'app',
-  components: {
-    HelloWorld
-  }
-}
+  name: "app",
+  data(){
+    return{
+      trans: '',
+    }
+  },
+  watch: {
+    $route(to, from){
+      if(to.meta.index > from.meta.index){
+        this.trans = 'move2right';
+      }else{
+        this.trans = 'move2left';
+      }
+    }
+  },
+  methods: {},
+};
 </script>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style scoped>
+@import "./assets/css/index.css";
+
 </style>

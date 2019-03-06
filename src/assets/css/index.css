@@ -1,0 +1,22 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: "Avenir", Helvetica, Arial, sans-serif;
+    box-sizing: border-box;
+}
+.move2left-enter-active,
+.move2left-leave-active,
+.move2right-enter-active,
+.move2right-leave-active {
+  transition: all 0.5s ;
+}
+
+.move2left-enter,
+.move2right-leave-to {
+  transform: translate(-100%);
+}
+.move2left-leave-to,
+.move2right-enter {
+  transform: translate(100%);
+}
+
