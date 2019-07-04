@@ -1,21 +1,17 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home'
-import Article from './views/Article'
-import Comments from './views/Comments'
-import Writeboard from './views/Writeboard'
-// import  from './views/eg'
 
 Vue.use(Router)
 
 export default new Router({
-  routes: [{
+  routes: [
+    {
       path: '/',
       name: 'home',
       meta: {
         index: 0,
       },
-      component: Home
+      component: () => import('./views/Home')
     },
     {
       path: '/article/:id',
@@ -23,7 +19,7 @@ export default new Router({
       meta: {
         index: 1,
       },
-      component: Article
+      component: () => import('./views/Article')
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
@@ -35,7 +31,7 @@ export default new Router({
       meta: {
         index: 2,
       },
-      component: Comments
+      component: () => import('./views/Comments')
     },
     {
       path: '/writeboard',
@@ -43,20 +39,20 @@ export default new Router({
       meta: {
         index: 3,
       },
-      component: Writeboard
+      component: () => import('./views/Writeboard')
     },
   ],
+
   //切换页面时带来的滚动行为
   scrollBehavior(to, from, savedPosition) {
-    if (!savedPosition) {
-      setTimeout(() => {
-        return {
-          x: 0,
-          y: 0
-        }
-      }, 500);
-    } else {
+    if (savedPosition) {
       return savedPosition
+    } else {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve({ x: 0, y: 0 })
+        }, 300)
+      })
     }
   },
 })

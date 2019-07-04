@@ -1,6 +1,6 @@
 // 作为配置文件，直接导出配置对象即可
 module.exports = {
-    publicPath: './', 
+    publicPath: './',
     // ?
     lintOnSave: true, //default
     //代理服务器
@@ -23,5 +23,22 @@ module.exports = {
         //         },
         //     },
         // }
-    }
+    },
+    // configureWebpack: {
+    //     plugins: [
+    //         new HtmlWebpackPlugin({
+    //             favicon: path.resolve('./src/assets/img/favicon.ico') // 增加
+    //         })
+    //     ]
+    // },
+    // pwa: {
+    //     iconPaths: {
+    //         favicon32: './favicon.ico',
+    //         favicon16: './favicon.ico',
+    //         appleTouchIcon: './favicon.ico',
+    //         maskIcon: './favicon.ico',
+    //         msTileImage: './favicon.ico'
+    //     }
+    // },
+
 }

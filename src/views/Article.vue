@@ -1,7 +1,12 @@
 <template>
-  <div class="article" >
+  <div class="article">
     <header v-if="articleData.type === 0">
-      <img v-if="articleData.image" :src="replaceUrl(articleData.image)" :alt="articleData.image_source">
+      <img
+        v-if="articleData.image"
+        :src="replaceUrl(articleData.image)"
+        :alt="articleData.image_source"
+        @load="loadImg"
+      >
       <div class="layer"></div>
       <span class="title title-postion">{{articleData.title}}</span>
       <span class="source">图片：{{articleData.image_source}}</span>
@@ -13,6 +18,7 @@
 
 <script>
 import { Indicator } from "mint-ui";
+
 import api from "../assets/js/api";
 import BottomMenu from "@/components/ArticleBottomMenu";
 // import articlecss from this.articleData.css[0];
@@ -35,17 +41,8 @@ export default {
       this.articleData = res.data;
       this.articleData.body = this.replaceUrl(this.articleData.body);
     });
-    document.body.scrollTop = 0;
-    document.documentElement.scrollTop = 0;
-    this.$nextTick(() => {
-      Indicator.open({
-        text: "加载中...",
-        spinnerType: "fading-circle"
-      });
-      setTimeout(() => {
-        Indicator.close();
-      }, 2000);
-    });
+  },
+  mouted() {
   },
   methods: {
     replaceUrl(oldurl) {
@@ -61,6 +58,9 @@ export default {
         /src="http\w{0,1}:\/\/p/g,
         "https://images.weserv.nl/?url=p"
       );
+    },
+    loadImg() {
+      Indicator.close();
     },
     reload() {
       //从上一篇点下一篇
@@ -146,9 +146,5 @@ export default {
     color: rgba(200, 200, 200, 1)
 
   .article-body
-    padding-bottom: calc((100vh / 11))
-  // &>>>.mint-indicator
-  //   .mint-indicator-wrapper
-  //     width 20vw;
-  //     height 20vw
+    padding-bottom: pr(60)
 </style>

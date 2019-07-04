@@ -31,9 +31,7 @@ export default new Vuex.Store({
     },
     getCommentNum(state, newnum) {
       state.commentNum += newnum;
-      // console.log(state.commentNum)
     }
-
   },
   actions: {
     // replaceUrl(oldurl) {

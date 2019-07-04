@@ -1,285 +1,312 @@
 <template>
-  <div ref="scrollwrapper" class="article-list">
+  <div class="article-list">
     <div
-      class="wrapper"
+      class="list-wrapper"
       v-infinite-scroll="loadmore"
       infinite-scroll-disabled="loading"
       infinite-scroll-distance="10"
     >
-      <ul v-for="(item,index) in stories" :key="index">
-        <div v-if="item.date" :class="{timespan: item.date}">{{date2str(item.date)}}</div>
-        <li v-for="(news,index) in item.stories" :key="index" @click="openArticle(news.id)">
-          <!-- <div class="wrapper" v-if="item.images[0]"> -->
-          <div>
-            <span>{{news.title}}</span>
-            <img v-lazy="replaceUrl(news.images[0])" :alt="news.title">
-          </div>
-          <!-- </div> -->
-        </li>
-      </ul>
+      <div class="oneday-wrapper" v-for="(item,index) in stories" :key="index">
+        <div class="date">
+          <div class="day">{{adjustDay(item.date)}}</div>
+          {{adjustDate(item.date)}}
+        </div>
+        <ul class="list">
+          <li
+            v-for="(news,index) in item.stories"
+            :key="index"
+            @click="openArticle($event, news.id)"
+            :class="index === 0 ? 'first' : ''"
+          >
+            <!-- 第一篇文章 -->
+            <div class="first-news" v-if="index === 0">
+              <img v-lazy="replaceUrl(news.images[0])" :alt="news.title">
+              <div class="title">{{news.title}}</div>
+            </div>
+            <!-- 其余文章列表 -->
+            <div class="border" v-if="index > 0">
+              <div>{{news.title}}</div>
+              <img v-lazy="replaceUrl(news.images[0])" :alt="news.title">
+            </div>
+          </li>
+        </ul>
+      </div>
+
       <!-- 加载项 -->
       <div class="loading" v-show="loading">
-        <i class="el-icon-loading"/>
+        <mt-spinner type="fading-circle"/>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+// @ is an alias to /src
 import api from "../assets/js/api";
 
 export default {
+  name: "articleList",
+  components: {},
+  props: {
+    searchDate: {
+      type: Date,
+      required: true
+    }
+  },
+  watch: {
+    searchDate() {
+      let str = this.searchDate.toLocaleDateString();
+      str = str.replace(/\/|\-/g, "/");
+      let arr = str.split("/");
+      arr.forEach((el,i) => {
+        if (el.length < 2) {
+          arr[i] = "0" + el;
+        }
+      });
+      let date = arr.join('');
+      this.getTimeData(date);
+    }
+  },
   data() {
     return {
+      stories: [],
+      date: "",
       loading: false,
-      date: Number,
-      stories: [], //总列表
-      page: 0
+      dateRange: []
     };
   },
   created() {
-    this.$store.commit('CLEAR_ID_LIST',[])
-    this.getTodayData();
-    //将数据传入store ??
+    this.$store.commit("CLEAR_ID_LIST", []);
+    this.getLatestData();
   },
-  // mounted() {
-  //   //监视scroll事件
-  //   window.onscroll = this.loadmore;
-  // },
-  // updated() {
-  //   //此时this.stories才会更新
-  //   this.$store.commit("getidList", this.getidList);
-  // },
-  computed: {
-    today() {
-      let today = new Date();
-      let y = today.getFullYear().toString();
-      let m = (today.getMonth() + 1).toString();
-      m = m.length === 1 ? "0" + m : m;
-      let d = today.getDate().toString();
-      d = d.length === 1 ? "0" + d : d;
-      today = y + m + d;
-      return today;
-    }
-  },
-  // watch: {
-  //   data: {
-  //     handler(e) {
-  //       //处理this.stories, 先处理时间, 后stories
-  //       let obj = {};
-  //       obj.date = this.data[this.page].date;
-  //       this.stories.push(obj);
-  //       this.stories = this.stories.concat(this.data[this.page].stories);
-  //       // this.$nextTick(() => {
-  //       this.$store.commit("getidList", this.getidList);
-  //       this.page++;
-  //       // });
-  //     },
-  //     deep: true
-  //   }
-  // },
-
-  // stories: {
-  //   handler() {
-  //     this.$store.commit("getidList", this.getidList);
-  //   },
-  //   deep: true
-  // },
-
   methods: {
-    getTodayData() {
+    //最新列表数据
+    getLatestData() {
       this.$axios(api.newsLatest).then(res => {
         // console.log(res);
-        let obj = {};
-        obj.date = res.data.date;
-        obj.stories = res.data.stories;
-        this.stories.push(obj);
-        this.date = this.today;
-        this.getidList(res.data.stories);
+        this.stories.push(res.data);
+        // this.getidList(res.data.stories);
+        this.date = res.data.date;
+        // this.$emit('deliverDate', res.data.date);
+        this.today = res.data.date;
+        this.getIdList(res.data.stories);
       });
     },
-
+    //获取之前文章列表数据
+    getBeforeData(daterange) {
+      if (daterange) {
+      }
+      this.$axios(api.newsBefore + this.date).then(res => {
+        if (!res.data.status) {
+          this.date = res.data.date;
+          this.stories.push(res.data);
+          this.getIdList(res.data.stories);
+        }
+      });
+    },
+    //加载更多
+    loadmore() {
+      // if (this.dateRange && this.date == this.dateRange[0]) {
+      //   this.loading = false;
+      //   return;
+      // }
+      if (!this.loading) {
+        this.loading = true;
+        setTimeout(() => {
+          this.getBeforeData();
+          this.loading = false;
+        }, 2000);
+      }
+    },
+    //按时间查找
+    getTimeData(searchDate) {
+      if (!searchDate) {
+        // this.dateRange = [];
+        this.getLatestData();
+      }
+      this.date = searchDate;
+      // this.dateRange = daterange;
+      this.stories = [];
+      this.loadmore();
+    },
+    //显示列表时间栏
+    adjustDate(date) {
+      if (this.today == date) return "Today";
+      let y = date.substr(0, 4) + "年";
+      let m = date.substr(4, 2) + "月";
+      let d = date.substr(6, 2) + "日";
+      return m + d;
+    },
+    //显示列表时间栏 - day
+    adjustDay(date) {
+      let y = parseInt(date.substr(0, 4));
+      let m = parseInt(date.substr(4, 2)) - 1;
+      let d = parseInt(date.substr(6, 2));
+      let newDate = new Date(y, m, d);
+      let day = newDate.getDay();
+      switch (day) {
+        case 0:
+          return "星期日";
+        case 1:
+          return "星期一";
+        case 2:
+          return "星期二";
+        case 3:
+          return "星期三";
+        case 4:
+          return "星期四";
+        case 5:
+          return "星期五";
+        case 6:
+          return "星期六";
+      }
+    },
+    //替换图片
     replaceUrl(oldurl) {
       return oldurl.replace(
         /http\w{0,1}:\/\/p/g,
         "https://images.weserv.nl/?url=p"
       );
     },
-    openArticle(id) {
-      //取得现在的id以及下一个id
+    //打开文章
+    openArticle(e, id) {
       this.$store.commit("getId", id);
-      //打开对应文章页面
-      this.$router.push({
-        name: "article",
-        params: {
-          id
-        }
-      });
-      // console.log(id);
+      this.openEffect(e);
+      setTimeout(() => {
+        this.$router.push({
+          name: "article",
+          params: {
+            id
+          }
+        });
+      }, 300);
     },
-    getidList(arr) {
-      let list = [];
-      arr.forEach(el => {
-        if (el.id) {
-          list.push(el.id);
-        }
+    //获取idlist
+    getIdList(list) {
+      let arr = [];
+      list.forEach(el => {
+        arr.push(el.id);
       });
-      this.$store.commit("GET_ID_LIST", list);
+      this.$store.commit("GET_ID_LIST", arr);
     },
-    date2str(d) {
-      let y = d.substr(0, 4),
-        m = d.substr(4, 2),
-        date = d.substr(6, 2),
-        day = new Date(y, m - 1, date).getDay();
-      switch (day) {
-        case 0:
-          day = "日";
-          break;
-        case 1:
-          day = "一";
-          break;
-        case 2:
-          day = "二";
-          break;
-        case 3:
-          day = "三";
-          break;
-        case 4:
-          day = "四";
-          break;
-        case 5:
-          day = "五";
-          break;
-        case 6:
-          day = "六";
-          break;
+    //点击图片特效
+    openEffect(e) {
+      let target = e.target || e.srcElement;
+      if (target.className !== "border" || target.className !== "first-news") {
+        target = target.parentNode;
       }
-      return m + "月" + date + "日" + " 星期" + day;
-    },
-    // 原先使用 vueScroller+原生来判断scroll
-    // //判定scroll
-    // scroller() {
-    //   let scrollHeight =
-    //       document.body.scrollTop || document.documentElement.scrollTop,
-    //     windowHeight = window.innerHeight,
-    //     bodyHeight = document.body.offsetHeight;
-    //   // console.log(scrollHeight + ":" + windowHeight + ":" + bodyHeight);
-    //   //判断高度移动高度+容器高度>=内容高度
-    //   return scrollHeight + windowHeight >= bodyHeight;
-    // },
-
-    //加载更多
-    loadmore() {
-      // if (this.scroller()) {
-      //   this.judgeDate(this.date);
-      // console.log("more");
-      if (!this.loading) {
-        this.loading = true;
+      if (target.className == "border" || target.className == "first-news") {
+        target.style.transform = "scale(0.9)";
+        target.style.boxShadow = "0 5px 6px 4px rgba(0, 0, 0, 0.3)";
         setTimeout(() => {
-          this.$axios(api.newsBefore + this.date).then(res => {
-            // console.log(res);
-            if (!res.data.status) {
-              this.stories.push(res.data);
-              this.date--;
-              this.getidList(res.data.stories);
-            }
-            //     let obj = res.data;
-            //     this.data.push(obj);
-            //     this.$nextTick(() => {
-            //       this.judgeDate(this.date);
-            this.loading = false;
-            //     });
-            //     // //处理数据
-            //     // this.$nextTick(() => {
-            //     //   let dataObj = {};
-            //     //   dataObj.date = this.data[this.page].date;
-            //     //   this.stories.push(dataObj);
-            //     //   this.stories = this.stories.concat(this.data[this.page].stories);
-            //     //   this.$store.commit("getidList", this.getidList);
-            //     // });
-          });
-        }, 2000);
+          target.style.transform = "scale(1)";
+          if (target.className == "first-news") {
+            target.style.boxShadow = "0 2px 4px 4px rgba(0, 0, 0, 0.1)";
+          } else {
+            target.style.boxShadow = "";
+          }
+        }, 250);
       }
-      // }
-    },
-    judgeDate(date) {
-      //分成年、月、日
-      let strDate = date.toString();
-      let y = strDate.substr(0, 4);
-      let m = strDate.substr(4, 2);
-      let d = strDate.substr(6, 2);
-      //日到00 -> 月-1，日变成上月最后一天
-      if (d === "00") {
-        d = new Date(y, m - 1, 0).getDate().toString();
-        m = (m - 1).toString();
-      }
-      //判断是否为两位数字
-      d = d.length === 1 ? "0" + d : d;
-      m = m.length === 1 ? "0" + m : m;
-      this.date = y + m + d;
     }
   }
 };
 </script>
 
-
 <style lang="stylus" scoped>
 @import '../assets/stylus/mixin.styl'
 
 .article-list
-  .wrapper
-    display: flex
-    flex-direction: column
+  background: rgb(255, 255, 255)
+  font-size: pr(16)
 
-  ul
-    padding: 0 pr(15)
-    list-style: none
+  // line-height pr()
+  .list-wrapper
+    padding: 0 pr(30)
 
-  li
-    box-sizing: border-box
-    padding: pr(15) 0
-    font-size: pr(16)
-    line-height: pr(24)
-    font-weight: 400
-    border-bottom: pr(1) solid rgba(2, 2, 2, 0.1)
-    display: flex
-    justify-content: space-between
+    div.oneday-wrapper
+      margin: pr(8) 0
+      // background lightyellow
+      border-radius: 10px
 
-    &>div
-      width: 100%
+      .date
+        // background: rgb(0, 157, 243)
+        width: 100%
+        padding: pr(5) 0
+        font-weight: 600
+        font-size: pr(25)
+        margin: pr(5) 0
 
-      &>span
-        display: inline-block
-        width: 75%
+        .day
+          color: rgb(142, 141, 147)
+          font-size: pr(16)
+          font-weight: 400
+          margin: pr(5) 0
 
-      &>img
-        float: right
-        width: 20%
-        height: 100%
+      ul.list
+        padding-bottom: pr(10)
+        border-bottom: pr(1) solid rgba(2, 2, 2, 0.1)
 
-  .timespan
-    display: flex
-    justify-content: center
-    align-items: center
-    background: rgb(0, 157, 243)
-    width: 100vw
-    margin: 0 pr(-15)
-    height: pr(35)
-    text-align: center
-    color: rgb(255, 255, 255)
-    font-size: pr(16)
-    font-weight: 600
-    padding: 0
+        &>li
+          line-height: pr(24)
 
-  .loading
-    height: pr(60)
-    padding: pr(5)
-    display: flex
-    justify-content: center
-    align-items: center
+          &.first>.first-news
+            background: lightyellow
+            width: 100%
+            height: pr(300)
+            position: relative
+            overflow: hidden
+            border-radius: 10px
+            box-shadow: 0 2px 4px 4px rgba(0, 0, 0, 0.1)
+            transition: all 0.5s ease
 
-    &>i
-      line-height: pr(60)
-      font-size: pr(20)
-      margin: 0 auto
+            &>img
+              position: absolute
+              width: 100%
+
+            &>.title
+              position: absolute
+              // background lightgreen
+              font-size: pr(20)
+              font-weight: 900
+              padding: 0 5%
+              line-height: pr(25)
+              bottom: 5%
+              color: white
+              text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.7)
+
+          .border
+            width: 100%
+            height: 100%
+            display: flex
+            justify-content: space-between
+            align-items: center
+            border-radius: 10px
+            transition: all 0.5s ease
+            transform: scale(1)
+
+            &>div
+              padding: pr(10) 0
+              margin-right: pr(10)
+              height: pr(100)
+              width: 100%
+              display: flex
+              align-items: center
+              vertical-align: middle
+              border-bottom: pr(1) solid rgba(2, 2, 2, 0.1)
+
+            &>img
+              padding: pr(10)
+              flex: none
+              width: pr(100)
+              height: pr(100)
+
+          &:last-child .border>div
+            border: none
+
+    .loading
+      height: pr(50)
+      padding: pr(10)
+      display: flex
+      justify-content: center
+      align-items: center
 </style>

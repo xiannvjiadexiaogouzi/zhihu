@@ -1,14 +1,8 @@
-*{
-    margin: 0;
-    padding: 0;
-    font-family: "Avenir", Helvetica, Arial, sans-serif;
-    box-sizing: border-box;
-}
 .move2left-enter-active,
 .move2left-leave-active,
 .move2right-enter-active,
-.move2right-leave-active {
-  transition: all 0.5s ;
+.move2right-leave-active{
+  transition: all 0.3s 0.25s linear;
 }
 
 .move2left-enter,
@@ -19,4 +13,21 @@
 .move2right-enter {
   transform: translate(100%);
 }
+
+.homeAnimation{
+  animation: openhome 5s linear forwards;
+}
+
+@keyframes openhome{
+  0%{
+    transform: scale(2);
+  }
+  50%{
+    transform:scale(1.5)
+  }
+  100%{
+    transform: scale(1);
+  }
+}
+
 

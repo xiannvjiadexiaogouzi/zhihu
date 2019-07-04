@@ -70,10 +70,8 @@ export default {
       this.$router.push({
         name: "home"
       });
-      // this.$router.go(-1); //效果一样
     },
     nextArticle() {
-      // console.log('btn'+this.$store.getters.nextId);
       //将store里的nextiId变为nowId
       this.$store.commit("next2now");
       this.$router.push({
