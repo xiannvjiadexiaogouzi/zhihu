@@ -5,9 +5,12 @@
 
 ## 预览
 [pc端]() [项目地址]()
+![](./zhihu-pc.gif)
 
+[移动端](https://xiannvjiadexiaogouzi.github.io/zhihu/#/) [项目地址](https://github.com/xiannvjiadexiaogouzi/zhihu)
 
-[移动端]() [项目地址]()
+![](./zhihu-mobile.gif)
+![](./zhihu-mobile2.gif)
 
 ## 技术栈
 - vue全家桶（vue, vue-router, vuex, vue-cli 3.0） 
@@ -15,7 +18,6 @@
 - mint-ui
 - element-ui
 - stylus 
-- webpack
 - ES6
 - eslint
 
