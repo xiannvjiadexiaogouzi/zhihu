@@ -1,16 +1,21 @@
 # ZhihuDaily - by vue
 用vue制作的zhihudaily的前端demo;
+
 添加了**日期检索**功能，可以加载指定日期文章;
+
 按照个人浏览习惯，我做了pc端和mobile两个版本;
 
+各位看客，喜欢的欢迎fork🍴或者给个star🌟！
+
 ## 预览
-[pc端]() [项目地址]()
-![](./zhihu-pc.gif)
+[pc端](https://xiannvjiadexiaogouzi.github.io/zhihudaily-pc/#/) [项目地址](https://github.com/xiannvjiadexiaogouzi/zhihudaily-pc)
+
+![](https://raw.githubusercontent.com/xiannvjiadexiaogouzi/zhihu/master/zhihu-pc.gif)
 
 [移动端](https://xiannvjiadexiaogouzi.github.io/zhihu/#/) [项目地址](https://github.com/xiannvjiadexiaogouzi/zhihu)
 
-![](./zhihu-mobile.gif)
-![](./zhihu-mobile2.gif)
+![](https://raw.githubusercontent.com/xiannvjiadexiaogouzi/zhihu/master/zhihu-mobile.gif) 
+![](https://raw.githubusercontent.com/xiannvjiadexiaogouzi/zhihu/master/zhihu-mobile2.gif)
 
 ## 技术栈
 - vue全家桶（vue, vue-router, vuex, vue-cli 3.0） 
